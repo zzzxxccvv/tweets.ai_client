@@ -42,7 +42,7 @@ const messageSlice = createSlice({
     },
     updateMessage(state, { payload: { id, message } }) {
       const oldMessage = state.messages.find(item => item.id === id)
-      console.log('update', oldMessage)
+
       if (oldMessage) {
         state.messages = [
           ...state.messages.filter(item => {

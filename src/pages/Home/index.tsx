@@ -105,22 +105,16 @@ function Home() {
         return
       }
 
-      if (['md'].includes(type)) {
-        addMessage(createBotMessage([{ content, type }], id, msgType))
-      }
+      const oldMessage = messages.find(item => {
+        return item.userMessageId === id
+      })
 
-      if (['graphic_pie', 'graphic_line'].includes(type)) {
-        const oldMessage = messages.find(item => {
-          return item.userMessageId === id
+      if (oldMessage) {
+        updateMessage(oldMessage.id, {
+          contents: oldMessage?.contents.concat([{ content, type }])
         })
-
-        if (oldMessage) {
-          updateMessage(oldMessage.id, {
-            contents: oldMessage?.contents.concat([{ content, type }])
-          })
-        } else {
-          addMessage(createBotMessage([{ content, type }], id, msgType))
-        }
+      } else if (['md', 'graphic_pie', 'graphic_line'].includes(type)) {
+        addMessage(createBotMessage([{ content, type }], id, msgType))
       }
 
       if (['thinking'].includes(type)) {
