@@ -9,6 +9,7 @@ import Input from './Input'
 import ReactECharts from 'echarts-for-react'
 import { nanoid } from '@reduxjs/toolkit'
 import { createEcho, parseEcho } from '../../utils/echo'
+import { WEB_SOCKET_URL } from '../../constants'
 
 const renderer = new marked.Renderer()
 
@@ -120,7 +121,7 @@ function Home() {
     [addMessage, createBotMessage, isTyping]
   )
 
-  const { sendMessage } = useWebSocket('ws://47.254.52.20:3000', onMessage)
+  const { sendMessage } = useWebSocket(WEB_SOCKET_URL, onMessage)
 
   useEffect(() => {
     if (!messages.length) {
