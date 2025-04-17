@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { marked } from 'marked'
 import './index.scss'
 import useWebSocket, { WebSocketMessage } from '../../hooks/useWebSocket'
-import { useAddMessage, useMessages } from '../../state/message/hooks'
+import { useAddMessage, useMessages, useUpdateMessage } from '../../state/message/hooks'
 import { Message } from '../../state/message/reducer'
 import sleep from '../../utils/sleep'
 import Input from './Input'
@@ -41,8 +41,10 @@ const tipsMessages: {
   [K in Message['type']]: string
 } = {
   create_tweets: 'Please @X handle, and a customized tweet will be generated for this X handle.',
-  public_opinions: 'Please enter the field you are interested in, such as trending crypto, entertainment, etc. We will find tweets worth real-time interaction based on your selected category.',
-  create_replies: 'You can enter the link of a published tweet to analyze the sentiment in the comment section, or enter a draft tweet to predict its sentiment.'
+  public_opinions:
+    'Please enter the field you are interested in, such as trending crypto, entertainment, etc. We will find tweets worth real-time interaction based on your selected category.',
+  create_replies:
+    'You can enter the link of a published tweet to analyze the sentiment in the comment section, or enter a draft tweet to predict its sentiment.'
 }
 
 function Home() {
@@ -63,29 +65,29 @@ function Home() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const addMessage = useAddMessage()
+  const updateMessage = useUpdateMessage()
 
   const createUserMessage = useCallback(
-    (content: string): Message => {
+    (contents: Message['contents']): Message => {
       return {
         id: nanoid(),
         createAt: Date.now(),
         role: 'user',
-        content,
-        type: currentType.id,
-        textType: 'md'
+        contents,
+        type: currentType.id
       }
     },
     [currentType]
   )
   const createBotMessage = useCallback(
-    (content: string, textType: Message['textType'], msgType?: Message['type']): Message => {
+    (contents: Message['contents'], userMessageId?: string, msgType?: Message['type']): Message => {
       return {
         id: nanoid(),
         createAt: Date.now(),
         role: 'assistant',
-        content,
-        type: msgType || currentType.id,
-        textType
+        userMessageId,
+        contents,
+        type: msgType || currentType.id
       }
     },
     [currentType]
@@ -93,18 +95,32 @@ function Home() {
 
   const onMessage = useCallback(
     async ({ content, status, type, echo }: WebSocketMessage) => {
-      const [msgType] = parseEcho(echo)
+      const [msgType, id] = parseEcho(echo)
 
       if (status === 'Error') {
-        addMessage(createBotMessage('Data retrieval error.', 'md', msgType))
+        addMessage(createBotMessage([{ content: 'Data retrieval error.', type: 'md' }], id, msgType))
         setIsTyping(pre => ({ ...pre, [msgType]: false }))
         await sleep(50)
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
         return
       }
 
-      if (['md', 'graphic_pie', 'graphic_line'].includes(type)) {
-        addMessage(createBotMessage(content, type))
+      if (['md'].includes(type)) {
+        addMessage(createBotMessage([{ content, type }], id, msgType))
+      }
+
+      if (['graphic_pie', 'graphic_line'].includes(type)) {
+        const oldMessage = messages.find(item => {
+          return item.userMessageId === id
+        })
+
+        if (oldMessage) {
+          updateMessage(oldMessage.id, {
+            contents: oldMessage?.contents.concat([{ content, type }])
+          })
+        } else {
+          addMessage(createBotMessage([{ content, type }], id, msgType))
+        }
       }
 
       if (['thinking'].includes(type)) {
@@ -118,14 +134,14 @@ function Home() {
       await sleep(50)
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     },
-    [addMessage, createBotMessage, isTyping]
+    [addMessage, createBotMessage, isTyping, messages, updateMessage]
   )
 
   const { sendMessage } = useWebSocket(WEB_SOCKET_URL, onMessage)
 
   useEffect(() => {
     if (!messages.length) {
-      addMessage(createBotMessage(tipsMessages[currentType.id], 'md'))
+      addMessage(createBotMessage([{ content: tipsMessages[currentType.id], type: 'md' }]))
     }
   }, [addMessage, createBotMessage, currentType.id, messages])
 
@@ -134,7 +150,7 @@ function Home() {
 
     if (!message || isTyping[currentType.id]) return
 
-    const msg = createUserMessage(value)
+    const msg = createUserMessage([{ content: value, type: 'md' }])
     addMessage(msg)
     setIsTyping(pre => ({ ...pre, [currentType.id]: true }))
 
@@ -148,24 +164,38 @@ function Home() {
     })
   }
 
-  const renderMessageContent = (content: string, role: Message['role'], type: Message['textType']) => {
+  const renderMessageContent = (msg: Message) => {
+    const { role, contents } = msg
+
     if (role === 'assistant') {
-      if (type === 'md') {
-        const html = marked.parse(content)
+      return (
+        <div
+          className='message-text'
+          style={{
+            width: contents.findIndex(item => ['graphic_pie', 'graphic_line'].includes(item.type)) > 0 ? '100%' : 'fit-content'
+          }}>
+          {contents.map(item => {
+            if (item.type === 'md') {
+              const html = marked.parse(item.content)
 
-        return <div className='message-text md prose' dangerouslySetInnerHTML={{ __html: html }} />
-      }
+              return <div className='prose' dangerouslySetInnerHTML={{ __html: html }} />
+            }
 
-      if (type === 'graphic_line') {
-        return <ReactECharts option={JSON.parse(content)} style={{ height: 300 }} />
-      }
+            if (item.type === 'graphic_line') {
+              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 300, width: '100%' }} />
+            }
 
-      if (type === 'graphic_pie') {
-        return <ReactECharts option={JSON.parse(content)} style={{ height: 260 }} />
-      }
+            if (item.type === 'graphic_pie') {
+              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 260, width: '100%' }} />
+            }
+
+            return null
+          })}
+        </div>
+      )
     }
 
-    return <div className='message-text prose'>{content}</div>
+    return <div className='message-text prose'>{contents[0].content}</div>
   }
 
   return (
@@ -178,7 +208,7 @@ function Home() {
             <div className='message-avatar bot-avatar'>AI</div>
             <div className='message-content'>
               <div className='message-role'>AI</div>
-              {renderMessageContent(botTips[currentType.id], 'assistant', 'md')}
+              {renderMessageContent(createBotMessage([{ content: botTips[currentType.id], type: 'md' }]))}
             </div>
           </div>
         )}
@@ -189,7 +219,7 @@ function Home() {
               {msg.role === 'assistant' && <div className={`message-avatar ${msg.role}-avatar`}>{'AI'}</div>}
               <div className='message-content'>
                 {msg.role === 'assistant' && <div className='message-role'>{'AI'}</div>}
-                {renderMessageContent(msg.content, msg.role, msg.textType)}
+                {renderMessageContent(msg)}
               </div>
             </div>
           ))}

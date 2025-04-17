@@ -2,11 +2,14 @@ import { createSlice, nanoid } from '@reduxjs/toolkit'
 
 export interface Message {
   id: string
+  userMessageId?: string
   createAt: number
   role: 'assistant' | 'user'
-  content: string
+  contents: {
+    type: 'md' | 'graphic_pie' | 'graphic_line' | 'start' | 'finish' | 'thinking' | 'error'
+    content: string
+  }[]
   type: 'create_tweets' | 'public_opinions' | 'create_replies'
-  textType: 'md' | 'graphic_pie' | 'graphic_line' | 'start' | 'finish' | 'thinking' | 'error'
 }
 
 export interface MessageState {
@@ -19,9 +22,13 @@ const initialState: MessageState = {
       id: nanoid(),
       createAt: Date.now(),
       role: 'assistant',
-      content: 'Please @X handle, and a customized tweet will be generated for this X handle.',
-      type: 'create_tweets',
-      textType: 'md'
+      contents: [
+        {
+          content: 'Please @X handle, and a customized tweet will be generated for this X handle.',
+          type: 'md'
+        }
+      ],
+      type: 'create_tweets'
     }
   ]
 }
@@ -33,6 +40,18 @@ const messageSlice = createSlice({
     addMessage(state, { payload: { message } }) {
       state.messages = [...state.messages.filter(item => item.id !== message.id), message]
     },
+    updateMessage(state, { payload: { id, message } }) {
+      const oldMessage = state.messages.find(item => item.id === id)
+      console.log('update', oldMessage)
+      if (oldMessage) {
+        state.messages = [
+          ...state.messages.filter(item => {
+            return item.id !== id
+          }),
+          { ...oldMessage, ...message }
+        ]
+      }
+    },
     removeMessage(state, { payload: { id } }) {
       state.messages = state.messages.filter(item => {
         return item.id !== id
@@ -41,5 +60,5 @@ const messageSlice = createSlice({
   }
 })
 
-export const { addMessage, removeMessage } = messageSlice.actions
+export const { addMessage, removeMessage, updateMessage } = messageSlice.actions
 export default messageSlice.reducer

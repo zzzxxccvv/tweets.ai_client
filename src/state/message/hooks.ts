@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { addMessage, Message, removeMessage } from './reducer'
+import { addMessage, Message, removeMessage, updateMessage } from './reducer'
 import { AppState } from '..'
 import { useAppDispatch, useAppSelector } from '../hooks'
 
@@ -9,6 +9,17 @@ export function useAddMessage(): (message: Message) => void {
   return useCallback(
     (message: Message) => {
       dispatch(addMessage({ message }))
+    },
+    [dispatch]
+  )
+}
+
+export function useUpdateMessage(): (id: string, message: Partial<Message>) => void {
+  const dispatch = useAppDispatch()
+
+  return useCallback(
+    (id: string, message: Partial<Message>) => {
+      dispatch(updateMessage({ id, message }))
     },
     [dispatch]
   )

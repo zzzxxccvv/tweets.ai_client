@@ -5,7 +5,7 @@ import { Message } from '../state/message/reducer'
 export interface WebSocketMessage {
   content: string
   status: 'success' | 'Error'
-  type: Message['textType']
+  type: Message['contents'][number]['type']
   echo: string
 }
 
