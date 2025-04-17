@@ -1,0 +1,7 @@
+.arrow-top {
+  transition: all 0.3s;
+  transform: rotate(0.5turn);
+  &.arrow-expand {
+    transform: rotate(0turn);
+  }
+}

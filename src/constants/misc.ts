@@ -1,0 +1,3 @@
+export const DEFAULT_TXN_DISMISS_MS = 5 * 1000
+
+export const DEFAULT_POPUP_DISMISS_MS = 5 * 1000
