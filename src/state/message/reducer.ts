@@ -8,6 +8,7 @@ export interface Message {
   contents: {
     type: 'md' | 'graphic_pie' | 'graphic_line' | 'start' | 'finish' | 'thinking' | 'error'
     content: string
+    id: string
   }[]
   type: 'create_tweets' | 'public_opinions' | 'create_replies'
 }
@@ -25,7 +26,8 @@ const initialState: MessageState = {
       contents: [
         {
           content: 'Please @X handle, and a customized tweet will be generated for this X handle.',
-          type: 'md'
+          type: 'md',
+          id: nanoid(),
         }
       ],
       type: 'create_tweets'

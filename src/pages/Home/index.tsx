@@ -93,12 +93,20 @@ function Home() {
     [currentType]
   )
 
+  const createContent = useCallback((content: string, type: Message['contents'][number]['type']): Message['contents'][number] => {
+    return {
+      id: nanoid(),
+      content: content,
+      type: type
+    }
+  }, [])
+
   const onMessage = useCallback(
     async ({ content, status, type, echo }: WebSocketMessage) => {
       const [msgType, id] = parseEcho(echo)
 
       if (status === 'Error') {
-        addMessage(createBotMessage([{ content: 'Data retrieval error.', type: 'md' }], id, msgType))
+        addMessage(createBotMessage([createContent('Data retrieval error.', 'md')], id, msgType))
         setIsTyping(pre => ({ ...pre, [msgType]: false }))
         await sleep(50)
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -111,10 +119,10 @@ function Home() {
 
       if (oldMessage) {
         updateMessage(oldMessage.id, {
-          contents: oldMessage?.contents.concat([{ content, type }])
+          contents: oldMessage?.contents.concat([createContent(content, type)])
         })
       } else if (['md', 'graphic_pie', 'graphic_line'].includes(type)) {
-        addMessage(createBotMessage([{ content, type }], id, msgType))
+        addMessage(createBotMessage([createContent(content, type)], id, msgType))
       }
 
       if (['start'].includes(type)) {
@@ -132,23 +140,23 @@ function Home() {
       await sleep(50)
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     },
-    [addMessage, createBotMessage, isTyping, messages, updateMessage]
+    [addMessage, createBotMessage, createContent, isTyping, messages, updateMessage]
   )
 
   const { sendMessage } = useWebSocket(WEB_SOCKET_URL, onMessage)
 
   useEffect(() => {
     if (!messages.length) {
-      addMessage(createBotMessage([{ content: tipsMessages[currentType.id], type: 'md' }]))
+      addMessage(createBotMessage([createContent(tipsMessages[currentType.id], 'md')]))
     }
-  }, [addMessage, createBotMessage, currentType.id, messages])
+  }, [addMessage, createBotMessage, createContent, currentType.id, messages])
 
   const handleSendMessage = async (value: string) => {
     const message = value.trim()
 
     if (!message || isTyping[currentType.id]) return
 
-    const msg = createUserMessage([{ content: value, type: 'md' }])
+    const msg = createUserMessage([createContent(value, 'md')])
     addMessage(msg)
     setIsTyping(pre => ({ ...pre, [currentType.id]: true }))
 
@@ -171,26 +179,21 @@ function Home() {
           className='message-text'
           style={{
             width: contents.findIndex(item => ['graphic_pie', 'graphic_line'].includes(item.type)) > 0 ? '100%' : 'fit-content',
-            maxWidth: '800px'
+            maxWidth: '900px'
           }}>
           {contents.map(item => {
             if (item.type === 'md') {
               const html = marked.parse(item.content)
 
-              return (
-                <div
-                  className='prose max-w-[800px]'
-                  dangerouslySetInnerHTML={{ __html: html }}
-                />
-              )
+              return <div className='prose max-w-[900px]' dangerouslySetInnerHTML={{ __html: html }} />
             }
 
             if (item.type === 'graphic_line') {
-              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 300, width: '100%', maxWidth: '710px' }} />
+              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 300, width: '100%', maxWidth: '800px' }} />
             }
 
             if (item.type === 'graphic_pie') {
-              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 260, width: '100%', maxWidth: '710px' }} />
+              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 260, width: '100%', maxWidth: '800px' }} />
             }
 
             return null
@@ -212,7 +215,7 @@ function Home() {
             <div className='message-avatar bot-avatar'>AI</div>
             <div className='message-content'>
               <div className='message-role'>AI</div>
-              {renderMessageContent(createBotMessage([{ content: botTips[currentType.id], type: 'md' }]))}
+              {renderMessageContent(createBotMessage([createContent(botTips[currentType.id], 'md')]))}
             </div>
           </div>
         )}
