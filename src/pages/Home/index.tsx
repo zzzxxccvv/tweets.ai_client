@@ -170,21 +170,27 @@ function Home() {
         <div
           className='message-text'
           style={{
-            width: contents.findIndex(item => ['graphic_pie', 'graphic_line'].includes(item.type)) > 0 ? '100%' : 'fit-content'
+            width: contents.findIndex(item => ['graphic_pie', 'graphic_line'].includes(item.type)) > 0 ? '100%' : 'fit-content',
+            maxWidth: '800px'
           }}>
           {contents.map(item => {
             if (item.type === 'md') {
               const html = marked.parse(item.content)
 
-              return <div className='prose md:prose-lg' dangerouslySetInnerHTML={{ __html: html }} />
+              return (
+                <div
+                  className='prose max-w-[800px]'
+                  dangerouslySetInnerHTML={{ __html: html }}
+                />
+              )
             }
 
             if (item.type === 'graphic_line') {
-              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 300, width: '100%' }} />
+              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 300, width: '100%', maxWidth: '710px' }} />
             }
 
             if (item.type === 'graphic_pie') {
-              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 260, width: '100%' }} />
+              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 260, width: '100%', maxWidth: '710px' }} />
             }
 
             return null
