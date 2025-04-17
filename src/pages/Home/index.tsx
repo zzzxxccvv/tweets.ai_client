@@ -14,7 +14,7 @@ import { WEB_SOCKET_URL } from '../../constants'
 const renderer = new marked.Renderer()
 
 renderer.link = function ({ href, title, text }) {
-  const link = `<a href="${href}" target="_blank"${title ? ` title="${title}"` : ''}>${text}</a>`
+  const link = `<a class="break-words" href="${href}" target="_blank"${title ? ` title="${title}"` : ''}>${text}</a>`
   return link
 }
 
@@ -117,6 +117,10 @@ function Home() {
         addMessage(createBotMessage([{ content, type }], id, msgType))
       }
 
+      if (['start'].includes(type)) {
+        setIsTyping(pre => ({ ...pre, [msgType]: false }))
+      }
+
       if (['thinking'].includes(type)) {
         setBotTips(pre => ({ ...pre, [msgType]: content }))
       }
@@ -172,7 +176,7 @@ function Home() {
             if (item.type === 'md') {
               const html = marked.parse(item.content)
 
-              return <div className='prose' dangerouslySetInnerHTML={{ __html: html }} />
+              return <div className='prose md:prose-lg' dangerouslySetInnerHTML={{ __html: html }} />
             }
 
             if (item.type === 'graphic_line') {

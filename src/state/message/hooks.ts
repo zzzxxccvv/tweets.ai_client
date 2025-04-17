@@ -39,6 +39,6 @@ export function useMessages(type: Message['type']): [AppState['message']['messag
   const list = useAppSelector((state: AppState) => state.message.messages)
 
   return useMemo(() => {
-    return [list.filter(item => item.type === type)]
+    return [list.filter(item => item.type === type).sort((a, b) => a.createAt - b.createAt)]
   }, [list, type])
 }
