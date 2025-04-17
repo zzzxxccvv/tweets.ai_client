@@ -19,7 +19,7 @@ const initialState: MessageState = {
       id: nanoid(),
       createAt: Date.now(),
       role: 'assistant',
-      content: '请@X号,将为这个X号生成定制化推文。',
+      content: 'Please @X handle, and a customized tweet will be generated for this X handle.',
       type: 'create_tweets',
       textType: 'md'
     }

@@ -16,7 +16,7 @@ export default function Input({ isTyping, handleSendMessage }: { isTyping: boole
             setInputValue('')
           }
         }}
-        placeholder='输入消息...'
+        placeholder='Enter message...'
       />
       <div className='flex justify-end'>
       <button

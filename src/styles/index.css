@@ -4,8 +4,4 @@
 
 body {
   font-family: 'JetBrainsMono', sans-serif;
-  p {
-    margin-block-start: 0;
-    margin-block-end: 0;
-  }
 }
