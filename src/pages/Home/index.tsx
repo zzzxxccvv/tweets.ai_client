@@ -28,7 +28,7 @@ const types: { name: string; id: Message['type'] }[] = [
     id: 'create_tweets'
   },
   {
-    name: 'Hot tweet interaction',
+    name: 'Interact with hot tweets',
     id: 'public_opinions'
   },
   {
@@ -176,7 +176,6 @@ function Home() {
     if (role === 'assistant') {
       return (
         <div
-          className='message-text'
           style={{
             width: contents.findIndex(item => ['graphic_pie', 'graphic_line'].includes(item.type)) > 0 ? '100%' : 'fit-content',
             maxWidth: '900px'
@@ -212,9 +211,8 @@ function Home() {
       <div className='chat-messages pb-6 relative flex flex-col-reverse' id='container'>
         {isTyping[currentType.id] && (
           <div className='message assistant'>
-            <div className='message-avatar bot-avatar'>AI</div>
-            <div className='message-content'>
-              <div className='message-role'>AI</div>
+            <div className='message-avatar assistant-avatar'>AI</div>
+            <div className='message-content pt-1'>
               {renderMessageContent(createBotMessage([createContent(botTips[currentType.id], 'md')]))}
             </div>
           </div>
@@ -225,7 +223,6 @@ function Home() {
             <div key={msg.id} className={`message ${msg.role}`}>
               {msg.role === 'assistant' && <div className={`message-avatar ${msg.role}-avatar`}>{'AI'}</div>}
               <div className='message-content'>
-                {msg.role === 'assistant' && <div className='message-role'>{'AI'}</div>}
                 {renderMessageContent(msg)}
               </div>
             </div>
@@ -234,7 +231,7 @@ function Home() {
       </div>
 
       <div className='bg-white absolute bottom-0 left-0 right-0 pt-[10px]'>
-        <div className='flex items-center pl-4 mb-[10px]'>
+        <div className='flex items-center pl-4 mb-[10px] w-full overflow-x-auto'>
           {types.map(item => (
             <div
               key={item.id}

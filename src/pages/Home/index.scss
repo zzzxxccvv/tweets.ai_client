@@ -19,7 +19,7 @@
 
   .message {
     display: flex;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
   }
 
   .message.user {
@@ -49,12 +49,18 @@
     flex-shrink: 0;
     background-color: #6e6e80;
   }
-
+  .assistant-avatar {
+    background-color: #536af5;
+  }
   .message-content {
     flex: 1;
     max-width: calc(100% - 55px);
     display: flex;
     flex-direction: column;
+    padding: 12px 0;
+    p {
+      line-height: 1.2;
+    }
   }
 
   .message-role {
