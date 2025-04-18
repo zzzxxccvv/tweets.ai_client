@@ -6,7 +6,7 @@ export interface Message {
   createAt: number
   role: 'assistant' | 'user'
   contents: {
-    type: 'md' | 'graphic_pie' | 'graphic_line' | 'start' | 'finish' | 'thinking' | 'error'
+    type: 'md' | 'graphic_pie' | 'graphic_line' | 'start' | 'finish' | 'thinking' | 'error' | 'list'
     content: string
     id: string
   }[]
@@ -27,7 +27,7 @@ const initialState: MessageState = {
         {
           content: 'Please @X handle, and a customized tweet will be generated for this X handle.',
           type: 'md',
-          id: nanoid(),
+          id: nanoid()
         }
       ],
       type: 'create_tweets'

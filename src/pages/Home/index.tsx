@@ -14,7 +14,7 @@ import { WEB_SOCKET_URL } from '../../constants'
 const renderer = new marked.Renderer()
 
 renderer.link = function ({ href, title, text }) {
-  const link = `<a class="break-words" href="${href}" target="_blank"${title ? ` title="${title}"` : ''}>${text}</a>`
+  const link = `<a class="break-words" href="${href}" target="_blank" ${title ? ` title="${title}"` : ''}>${text}</a>`
   return link
 }
 
@@ -58,6 +58,11 @@ function Home() {
     create_tweets: 'Analyzing the content characteristics of this X handle...',
     public_opinions: 'Searching for current trending events + related popular tweets...',
     create_replies: 'Retrieving comment section content and analyzing...'
+  })
+  const [loadingTips, setLoadingTips] = useState<{ [K in Message['type']]: string }>({
+    create_tweets: '',
+    public_opinions: '',
+    create_replies: ''
   })
 
   const [messages] = useMessages(currentType.id)
@@ -105,6 +110,11 @@ function Home() {
     async ({ content, status, type, echo }: WebSocketMessage) => {
       const [msgType, id] = parseEcho(echo)
 
+      if (['list'].includes(type) && currentType.id === msgType) {
+        setLoadingTips(pre => ({ ...pre, [msgType]: content }))
+        return
+      }
+
       if (status === 'Error') {
         addMessage(createBotMessage([createContent('Data retrieval error.', 'md')], id, msgType))
         setIsTyping(pre => ({ ...pre, [msgType]: false }))
@@ -114,33 +124,45 @@ function Home() {
       }
 
       const oldMessage = messages.find(item => {
-        return item.userMessageId === id
+        return item.userMessageId && item.userMessageId === id
       })
 
       if (oldMessage) {
         updateMessage(oldMessage.id, {
           contents: oldMessage?.contents.concat([createContent(content, type)])
         })
-      } else if (['md', 'graphic_pie', 'graphic_line'].includes(type)) {
-        addMessage(createBotMessage([createContent(content, type)], id, msgType))
+
+        await sleep(50)
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        return
       }
 
-      if (['start'].includes(type)) {
-        setIsTyping(pre => ({ ...pre, [msgType]: false }))
+      if (['md', 'graphic_pie', 'graphic_line'].includes(type)) {
+        addMessage(createBotMessage([createContent(content, type)], id, msgType))
+
+        await sleep(50)
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        return
       }
 
       if (['thinking'].includes(type)) {
         setBotTips(pre => ({ ...pre, [msgType]: content }))
+        await sleep(50)
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        return
+      }
+
+      if (['start'].includes(type)) {
+        setIsTyping(pre => ({ ...pre, [msgType]: false }))
+        return
       }
 
       if (isTyping[msgType] && type === 'finish') {
         setIsTyping(pre => ({ ...pre, [msgType]: false }))
+        return
       }
-
-      await sleep(50)
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     },
-    [addMessage, createBotMessage, createContent, isTyping, messages, updateMessage]
+    [addMessage, createBotMessage, createContent, currentType.id, isTyping, messages, updateMessage]
   )
 
   const { sendMessage } = useWebSocket(WEB_SOCKET_URL, onMessage)
@@ -184,15 +206,15 @@ function Home() {
             if (item.type === 'md') {
               const html = marked.parse(item.content)
 
-              return <div className='prose max-w-[900px]' dangerouslySetInnerHTML={{ __html: html }} />
+              return <div key={item.id} className='prose max-w-[900px]' dangerouslySetInnerHTML={{ __html: html }} />
             }
 
             if (item.type === 'graphic_line') {
-              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 300, width: '100%', maxWidth: '800px' }} />
+              return <ReactECharts key={item.id} option={JSON.parse(item.content)} style={{ height: 300, width: '100%', maxWidth: '800px' }} />
             }
 
             if (item.type === 'graphic_pie') {
-              return <ReactECharts option={JSON.parse(item.content)} style={{ height: 260, width: '100%', maxWidth: '800px' }} />
+              return <ReactECharts key={item.id} option={JSON.parse(item.content)} style={{ height: 260, width: '100%', maxWidth: '800px' }} />
             }
 
             return null
@@ -209,12 +231,16 @@ function Home() {
       <div className='h-14 absolute top-0 left-0 right-0 flex items-center justify-center font-medium'>{currentType.name}</div>
 
       <div className='chat-messages pb-6 relative flex flex-col-reverse' id='container'>
+        {loadingTips[currentType.id] && (
+          <div className='message assistant'>
+            <div className='message-avatar assistant-avatar'>AI</div>
+            <div className='message-content pt-1'>{renderMessageContent(createBotMessage([createContent(loadingTips[currentType.id], 'md')]))}</div>
+          </div>
+        )}
         {isTyping[currentType.id] && (
           <div className='message assistant'>
             <div className='message-avatar assistant-avatar'>AI</div>
-            <div className='message-content pt-1'>
-              {renderMessageContent(createBotMessage([createContent(botTips[currentType.id], 'md')]))}
-            </div>
+            <div className='message-content pt-1'>{renderMessageContent(createBotMessage([createContent(botTips[currentType.id], 'md')]))}</div>
           </div>
         )}
         <div ref={messagesEndRef} id='messages-end' />
@@ -222,9 +248,7 @@ function Home() {
           {messages.map(msg => (
             <div key={msg.id} className={`message ${msg.role}`}>
               {msg.role === 'assistant' && <div className={`message-avatar ${msg.role}-avatar`}>{'AI'}</div>}
-              <div className='message-content'>
-                {renderMessageContent(msg)}
-              </div>
+              <div className='message-content'>{renderMessageContent(msg)}</div>
             </div>
           ))}
         </div>
