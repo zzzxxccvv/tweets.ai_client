@@ -64,7 +64,6 @@ function Home() {
     public_opinions: '',
     create_replies: ''
   })
-
   const [messages] = useMessages(currentType.id)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -153,7 +152,7 @@ function Home() {
       }
 
       if (['start'].includes(type)) {
-        setIsTyping(pre => ({ ...pre, [msgType]: false }))
+        setIsTyping(pre => ({ ...pre, [msgType]: true }))
         return
       }
 
