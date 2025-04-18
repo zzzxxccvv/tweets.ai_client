@@ -114,7 +114,7 @@ function Home() {
         return
       }
 
-      if (status === 'Error') {
+      if (status === 'error') {
         addMessage(createBotMessage([createContent('Data retrieval error.', 'md')], id, msgType))
         setIsTyping(pre => ({ ...pre, [msgType]: false }))
         await sleep(50)
