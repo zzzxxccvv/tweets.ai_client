@@ -135,7 +135,6 @@ function Home() {
       }
 
       if (type === 'finish') {
-        console.log(type === 'finish')
         setIsTyping(pre => ({ ...pre, [msgType]: false }))
         return
       }
