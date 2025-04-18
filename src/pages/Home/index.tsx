@@ -122,6 +122,24 @@ function Home() {
         return
       }
 
+      if (['thinking'].includes(type) && currentType.id === msgType) {
+        setBotTips(pre => ({ ...pre, [msgType]: content }))
+        await sleep(50)
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        return
+      }
+
+      if (['start'].includes(type) && currentType.id === msgType) {
+        setIsTyping(pre => ({ ...pre, [msgType]: true }))
+        return
+      }
+
+      if (type === 'finish') {
+        console.log(type === 'finish')
+        setIsTyping(pre => ({ ...pre, [msgType]: false }))
+        return
+      }
+
       const oldMessage = messages.find(item => {
         return item.userMessageId && item.userMessageId === id
       })
@@ -143,25 +161,8 @@ function Home() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
         return
       }
-
-      if (['thinking'].includes(type)) {
-        setBotTips(pre => ({ ...pre, [msgType]: content }))
-        await sleep(50)
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-        return
-      }
-
-      if (['start'].includes(type)) {
-        setIsTyping(pre => ({ ...pre, [msgType]: true }))
-        return
-      }
-
-      if (isTyping[msgType] && type === 'finish') {
-        setIsTyping(pre => ({ ...pre, [msgType]: false }))
-        return
-      }
     },
-    [addMessage, createBotMessage, createContent, currentType.id, isTyping, messages, updateMessage]
+    [addMessage, createBotMessage, createContent, currentType.id, messages, updateMessage]
   )
 
   const { sendMessage } = useWebSocket(WEB_SOCKET_URL, onMessage)
