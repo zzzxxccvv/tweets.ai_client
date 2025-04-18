@@ -106,7 +106,7 @@ function Home() {
   }, [])
 
   const onMessage = useCallback(
-    async ({ content, status, type, echo }: WebSocketMessage) => {
+    async ({ content, type, echo }: WebSocketMessage) => {
       const [msgType, id] = parseEcho(echo)
 
       if (['list'].includes(type) && currentType.id === msgType) {
@@ -114,8 +114,8 @@ function Home() {
         return
       }
 
-      if (status === 'error') {
-        addMessage(createBotMessage([createContent('Data retrieval error.', 'md')], id, msgType))
+      if (type === 'error') {
+        addMessage(createBotMessage([createContent(content, 'md')], id, msgType))
         setIsTyping(pre => ({ ...pre, [msgType]: false }))
         await sleep(50)
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
