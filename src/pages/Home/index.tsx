@@ -203,9 +203,15 @@ function Home() {
           }}>
           {contents.map(item => {
             if (item.type === 'md') {
-              const html = marked.parse(item.content)
+              try {
+                const html = marked.parse(item.content)
 
-              return <div key={item.id} className='prose max-w-[900px]' dangerouslySetInnerHTML={{ __html: html }} />
+                return <div key={item.id} className='prose max-w-[900px]' dangerouslySetInnerHTML={{ __html: html }} />
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+              } catch (error: any) {
+                console.log('render md error', item.content)
+                return
+              }
             }
 
             if (item.type === 'graphic_line') {
