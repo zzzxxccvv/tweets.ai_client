@@ -18,7 +18,15 @@ export default {
       '2xl': '1536px',
       // => @media (min-width: 1536px) { ... }
     },
-    extend: {}
+    extend: {
+      typography: ({ theme }) => ({
+        pink: {
+          css: {
+           
+          },
+        },
+      }),
+    }
   },
   plugins: [
     require('@tailwindcss/typography'),

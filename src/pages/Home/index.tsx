@@ -124,8 +124,6 @@ function Home() {
 
       if (['thinking'].includes(type) && currentType.id === msgType) {
         setBotTips(pre => ({ ...pre, [msgType]: content }))
-        await sleep(50)
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
         return
       }
 
@@ -164,7 +162,7 @@ function Home() {
     [addMessage, createBotMessage, createContent, currentType.id, messages, updateMessage]
   )
 
-  const { sendMessage } = useWebSocket(WEB_SOCKET_URL, onMessage)
+  const { sendMessage, isConnected } = useWebSocket(WEB_SOCKET_URL, onMessage)
 
   useEffect(() => {
     if (!messages.length) {
@@ -199,16 +197,14 @@ function Home() {
         <div
           style={{
             width: contents.findIndex(item => ['graphic_pie', 'graphic_line'].includes(item.type)) > 0 ? '100%' : 'fit-content',
-            maxWidth: '900px',
-            overflowX: 'auto',
-            minWidth: '375px'
+            maxWidth: '900px'
           }}>
           {contents.map(item => {
             if (item.type === 'md') {
               try {
                 const html = marked.parse(item.content)
 
-                return <div key={item.id} className='prose max-w-[900px]' dangerouslySetInnerHTML={{ __html: html }} />
+                return <div key={item.id} className='prose-sm max-w-[900px]' dangerouslySetInnerHTML={{ __html: html }} />
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
               } catch (error: any) {
                 console.log('render md error', item.content)
@@ -221,7 +217,8 @@ function Home() {
                 <ReactECharts
                   key={item.id}
                   option={JSON.parse(item.content)}
-                  style={{ height: 300, width: '100%', minWidth: '375px', maxWidth: '800px' }}
+                  className='md:min-w-[400px] min-w-[280px]'
+                  style={{ height: 300, width: '100%', maxWidth: '800px' }}
                 />
               )
             }
@@ -231,7 +228,8 @@ function Home() {
                 <ReactECharts
                   key={item.id}
                   option={JSON.parse(item.content)}
-                  style={{ height: 260, width: '100%', minWidth: '375px', maxWidth: '800px' }}
+                  className='md:min-w-[400px] md:min-h-[260px] min-h-[150px] min-w-[150px]'
+                  style={{ height: 260, width: '100%', maxWidth: '800px' }}
                 />
               )
             }
@@ -242,7 +240,7 @@ function Home() {
       )
     }
 
-    return <div className='message-text prose'>{contents[0].content}</div>
+    return <div className='message-text prose break-all whitespace-normal'>{contents[0].content}</div>
   }
 
   return (
@@ -253,13 +251,17 @@ function Home() {
         {loadingTips[currentType.id] && (
           <div className='message assistant'>
             <div className='message-avatar assistant-avatar'>AI</div>
-            <div className='message-content pt-1'>{renderMessageContent(createBotMessage([createContent(loadingTips[currentType.id], 'md')]))}</div>
+            <div className='message-content pt-1 text-xs'>
+              {renderMessageContent(createBotMessage([createContent(loadingTips[currentType.id], 'md')]))}
+            </div>
           </div>
         )}
         {isTyping[currentType.id] && (
           <div className='message assistant'>
             <div className='message-avatar assistant-avatar'>AI</div>
-            <div className='message-content pt-1'>{renderMessageContent(createBotMessage([createContent(botTips[currentType.id], 'md')]))}</div>
+            <div className='message-content pt-1 text-xs'>
+              {renderMessageContent(createBotMessage([createContent(botTips[currentType.id], 'md')]))}
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} id='messages-end' />
@@ -291,7 +293,7 @@ function Home() {
           ))}
         </div>
 
-        <Input isTyping={isTyping[currentType.id]} handleSendMessage={handleSendMessage} />
+        <Input isConnected={isConnected} isTyping={isTyping[currentType.id]} handleSendMessage={handleSendMessage} />
       </div>
     </div>
   )
