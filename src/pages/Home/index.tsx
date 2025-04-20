@@ -199,7 +199,9 @@ function Home() {
         <div
           style={{
             width: contents.findIndex(item => ['graphic_pie', 'graphic_line'].includes(item.type)) > 0 ? '100%' : 'fit-content',
-            maxWidth: '900px'
+            maxWidth: '900px',
+            overflowX: 'auto',
+            minWidth: '375px'
           }}>
           {contents.map(item => {
             if (item.type === 'md') {
@@ -215,11 +217,23 @@ function Home() {
             }
 
             if (item.type === 'graphic_line') {
-              return <ReactECharts key={item.id} option={JSON.parse(item.content)} style={{ height: 300, width: '100%', maxWidth: '800px' }} />
+              return (
+                <ReactECharts
+                  key={item.id}
+                  option={JSON.parse(item.content)}
+                  style={{ height: 300, width: '100%', minWidth: '375px', maxWidth: '800px' }}
+                />
+              )
             }
 
             if (item.type === 'graphic_pie') {
-              return <ReactECharts key={item.id} option={JSON.parse(item.content)} style={{ height: 260, width: '100%', maxWidth: '800px' }} />
+              return (
+                <ReactECharts
+                  key={item.id}
+                  option={JSON.parse(item.content)}
+                  style={{ height: 260, width: '100%', minWidth: '375px', maxWidth: '800px' }}
+                />
+              )
             }
 
             return null
