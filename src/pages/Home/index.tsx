@@ -40,11 +40,11 @@ const types: { name: string; id: Message['type'] }[] = [
 const tipsMessages: {
   [K in Message['type']]: string
 } = {
-  create_tweets: 'Please @X handle, and a customized tweet will be generated for this X handle.',
+  create_tweets: 'Enter @username and a personalized tweet will follow shortly. (Caching may take up to 10 minutes for a first-time mention). Example: @cz_binance',
   public_opinions:
-    'Please enter the field you are interested in, such as trending crypto, entertainment, etc. We will find tweets worth real-time interaction based on your selected category.',
+    'Enter a topic we’ll find tweets worth your attention. Example: crypto.',
   create_replies:
-    'You can enter the link of a published tweet to analyze the sentiment in the comment section, or enter a draft tweet to predict its sentiment.'
+    'Enter a tweet link to analyze comment sentiment. Example: https://x.com/cz_binance/status/1908943109825896626'
 }
 
 function Home() {
@@ -280,11 +280,10 @@ function Home() {
           {types.map(item => (
             <div
               key={item.id}
-              className={`flex items-center h-7 last:mr-0 md:mr-4 mr-2 text-nowrap rounded-full border border-solid  md:px-[14px] px-2 cursor-pointer text-xs ${
-                item.id === currentType.id
-                  ? 'bg-[#DBEAFE] text-[#4D6BFE] border-[rgba(0,122,255,0.15)]'
-                  : 'bg-white text-[#4c4c4c] border-[rgba(0,0,0,0.12)]'
-              }`}
+              className={`flex items-center h-7 last:mr-0 md:mr-4 mr-2 text-nowrap rounded-full border border-solid  md:px-[14px] px-2 cursor-pointer text-xs ${item.id === currentType.id
+                ? 'bg-[#DBEAFE] text-[#4D6BFE] border-[rgba(0,122,255,0.15)]'
+                : 'bg-white text-[#4c4c4c] border-[rgba(0,0,0,0.12)]'
+                }`}
               onClick={() => {
                 setCurrentType(item)
               }}>

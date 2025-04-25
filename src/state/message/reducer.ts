@@ -25,7 +25,7 @@ const initialState: MessageState = {
       role: 'assistant',
       contents: [
         {
-          content: 'Please @X handle, and a customized tweet will be generated for this X handle.',
+          content: 'Enter @username and a personalized tweet will follow shortly. (Caching may take up to 10 minutes for a first-time mention). Example: @cz_binance',
           type: 'md',
           id: nanoid()
         }
