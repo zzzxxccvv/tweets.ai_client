@@ -1,3 +1,14 @@
+tweets.ai — AI-powered style cloning for X (Twitter)
+	•	1️⃣ Model & Tweet – Drop any @handle, we scrape the timeline, clone the style, and ship a news-aware tweet.
+	•	2️⃣ Trend Replies – Enter a topic → get top tweets plus auto-crafted replies (support · neutral · oppose) in the cloned style.
+	•	3️⃣ Sentiment Scan – Paste a tweet URL → we cluster comments by sentiment and draft on-brand responses.
+
+Instant demo: a pre-baked @cz_binance persona skips the usual ~30 min training wait.
+
+Tech stack: Node · TypeScript · OpenAI API · twitterapi.io · twttrapi
+
+Delivers Stage 1 & 2 of the cz_request today, with cross-platform DM handling on the roadmap.
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
